@@ -1,0 +1,18 @@
+schema: bittrellis/manifest@2
+track: HPC-01
+name: gdn-q4k-skip0-mlp-1-47
+description: >
+  Q4_K on every recurrent projection in layers 1-63 and on MLP blocks 1-47.
+  Layer 0 stays NVFP4, and MLP layers 48-63 stay NVFP4. #15 used this same
+  GDN map plus MLP 1-63 and cleared the 32K needles and the holdout. The
+  48-63 MLP tail is the band that dropped a 32K needle when paired with deep
+  GDN alone. Attention and lm_head stay at the shipped baseline.
+authors: [carlo171112]
+default: NVFP4
+rules:
+  - match: "L*.gdn.*"
+    layers: "1-63"
+    format: Q4_K
+  - match: "L*.mlp"
+    layers: "1-47"
+    format: Q4_K
