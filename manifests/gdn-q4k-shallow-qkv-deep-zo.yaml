@@ -1,0 +1,23 @@
+schema: bittrellis/manifest@2
+track: HPC-01
+name: gdn-q4k-shallow-qkv-deep-zo
+description: >
+  Q4_K on the shallow recurrent qkv (layers 1-31) and on deep z and out
+  (layers 32-63). Deep qkv stays NVFP4. Layer 0, attention, the MLP, and
+  lm_head stay NVFP4. #5 put Q4_K on every deep projection and reached
+  15,158 tok/s prefill, then failed the holdout with the shallow state left
+  native. #7 quantized that shallow state as well and the holdout passed,
+  at 13,885 tok/s. This keeps the deep z and out, and moves Q4_K onto the
+  shallow qkv instead of the deep qkv.
+authors: [carlo171112]
+default: NVFP4
+rules:
+  - match: "L*.gdn.qkv"
+    layers: "1-31"
+    format: Q4_K
+  - match: "L*.gdn.z"
+    layers: "32-63"
+    format: Q4_K
+  - match: "L*.gdn.out"
+    layers: "32-63"
+    format: Q4_K
