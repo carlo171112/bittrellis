@@ -1,0 +1,24 @@
+schema: bittrellis/manifest@2
+track: HPC-01
+name: gdn-fp8-mlp-q4k-mid
+description: >
+  gdn-fp8-mlp-q4k-skip0 (#33) with its MLP Q4_K narrowed to the mid window, layers 24-47. #33 has the lowest
+  drift on the frontier but reads prompts 48% slower than V0, and most of that cost is the Q4_K MLP.
+  Measured by section, the two ends of that MLP range cost more than they return. The shallow blocks carry
+  most of the prefill cost: V7 (MLP 0-31) loses as much prefill as V6 (all 64). The deep blocks raise math
+  drift: gdn-q4k-deep 0.131 against gdn-mlp-deep-q4k 0.160, and V7 0.112 against V6 0.210. #33's math (0.136)
+  is worse than V3's (0.102). The 24-47 window cost about 15% prefill in #24, gave the lowest math drift of
+  any internal result (0.081), and passed the holdout. FP8 on every recurrent projection and lm_head stored
+  BF16 for a Q4_K fit are kept from #33, and attention stays NVFP4. Expected: drift between #33 and V3,
+  prefill about 11-12k tok/s, and peak memory below V3. This fills the gap between #33 (8.8k prefill) and
+  V3 (13.8k).
+authors: [carlo171112]
+default: NVFP4
+rules:
+  - match: "L*.gdn.*"
+    format: FP8
+  - match: "L*.mlp"
+    layers: "24-47"
+    format: Q4_K
+modules:
+  lm_head: Q4_K
